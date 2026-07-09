@@ -7,7 +7,6 @@ import 'providers/auth_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/attendance/attendance_screen.dart';
-import 'screens/attendance/selfie_screen.dart';
 import 'screens/attendance/history_screen.dart';
 import 'screens/employee/employee_list_screen.dart';
 import 'screens/employee/employee_detail_screen.dart';
@@ -51,7 +50,6 @@ class AppAbsenApp extends StatelessWidget {
       AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.home: (_) => const HomeScreen(),
       AppRoutes.attendance: (_) => const AttendanceScreen(),
-      AppRoutes.selfie: (_) => const SelfieScreen(),
       AppRoutes.history: (_) => const HistoryScreen(),
       AppRoutes.employees: (_) => const EmployeeListScreen(),
       AppRoutes.employeeDetail: (_) => const EmployeeDetailScreen(),

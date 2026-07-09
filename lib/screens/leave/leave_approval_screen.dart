@@ -162,7 +162,7 @@ class _LeaveApprovalScreenState extends State<LeaveApprovalScreen>
           children: [
             const Text('Tolak pengajuan cuti ini?'),
             const SizedBox(height: 16),
-            TextField(
+            TextFormField(
               controller: catatanController,
               decoration: const InputDecoration(
                 labelText: 'Alasan Penolakan',

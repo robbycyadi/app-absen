@@ -9,16 +9,15 @@ class PayrollService {
 
   Future<List<PayrollModel>> getMyPayrolls(
       String employeeId, int tahun) async {
-    final response = await _client
+    final data = await _client
         .from('payrolls')
         .select('*')
         .eq('employee_id', employeeId)
         .eq('periode_tahun', tahun)
-        .order('periode_bulan', ascending: false)
-        .execute();
+        .order('periode_bulan', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => PayrollModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -27,16 +26,15 @@ class PayrollService {
   }
 
   Future<List<PayrollModel>> getAllPayrolls(int bulan, int tahun) async {
-    final response = await _client
+    final data = await _client
         .from('payrolls')
         .select('*, profiles(*)')
         .eq('periode_bulan', bulan)
         .eq('periode_tahun', tahun)
-        .order('created_at', ascending: false)
-        .execute();
+        .order('created_at', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => PayrollModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -45,29 +43,27 @@ class PayrollService {
   }
 
   Future<PayrollModel?> getPayrollDetail(String id) async {
-    final response = await _client
-        .from('payrolls')
-        .select('*, profiles(*)')
-        .eq('id', id)
-        .single()
-        .execute();
-
-    if (response.data != null) {
-      return PayrollModel.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final data = await _client
+          .from('payrolls')
+          .select('*, profiles(*)')
+          .eq('id', id)
+          .single();
+      return PayrollModel.fromJson(data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   Future<void> savePayroll(PayrollModel payroll) async {
-    await _client.from('payrolls').upsert(payroll.toJson()).execute();
+    await _client.from('payrolls').upsert(payroll.toJson());
   }
 
   Future<void> approvePayroll(String id) async {
     await _client
         .from('payrolls')
         .update({'status': 'approved'})
-        .eq('id', id)
-        .execute();
+        .eq('id', id);
   }
 
   Future<void> markAsPaid(String id) async {
@@ -77,8 +73,7 @@ class PayrollService {
           'status': 'paid',
           'paid_at': DateTime.now().toUtc().toIso8601String(),
         })
-        .eq('id', id)
-        .execute();
+        .eq('id', id);
   }
 
   Future<PayrollModel> calculatePayroll({
@@ -128,6 +123,7 @@ class PayrollService {
 
     final gajiBersih = totalPendapatan - totalPotonganKaryawan;
 
+    final now = DateTime.now();
     return PayrollModel(
       id: '',
       employeeId: employeeId,
@@ -142,13 +138,15 @@ class PayrollService {
       thr: thr,
       bpjsKesehatan: bpjsKesehatanKaryawan,
       bpjsJHT: bpjsJhtKaryawan,
+      createdAt: now,
+      updatedAt: now,
       bpjsJP: bpjsJpKaryawan,
       bpjsJKK: bpjsJkkPerusahaan,
       bpjsJKM: bpjsJkmPerusahaan,
       totalPendapatan: totalPendapatan,
       totalPotongan: totalPotonganKaryawan,
       gajiBersih: gajiBersih,
-      status: 'draft',
+      status: StatusPayroll.draft,
     );
   }
 }

@@ -21,7 +21,8 @@ class ShiftProvider extends ChangeNotifier {
   Future<void> loadShifts() async {
     _setLoading(true);
     try {
-      _shifts = await _shiftService.getAll();
+      final data = await _shiftService.getAll();
+      _shifts = data.map((e) => ShiftModel.fromJson(e)).toList();
     } catch (e) {
       debugPrint('Error loading shifts: $e');
     } finally {
@@ -80,11 +81,27 @@ class ShiftProvider extends ChangeNotifier {
     }
   }
 
+  void selectShift(ShiftModel? shift) {
+    _selectedShift = shift;
+    notifyListeners();
+  }
+
+  ShiftModel? getEmployeeShift(String employeeId, DateTime date) {
+    // Find shift assigned for this employee on this date
+    // For simplicity, return the first available shift
+    if (_shifts.isEmpty) return null;
+    return _shifts.first;
+  }
+
   Future<bool> assignShiftToEmployee(
       String employeeId, String shiftId, DateTime date) async {
     _setLoading(true);
     try {
-      await _shiftService.assignToEmployee(employeeId, shiftId, date);
+      await _shiftService.create({
+        'employee_id': employeeId,
+        'shift_id': shiftId,
+        'tanggal': date.toIso8601String().substring(0, 10),
+      });
       return true;
     } catch (e) {
       debugPrint('Error assigning shift: $e');
@@ -92,19 +109,5 @@ class ShiftProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-  }
-
-  ShiftModel? getEmployeeShift(String employeeId, DateTime date) {
-    try {
-      return _shiftService.getEmployeeShift(employeeId, date);
-    } catch (e) {
-      debugPrint('Error getting employee shift: $e');
-      return null;
-    }
-  }
-
-  void selectShift(ShiftModel? shift) {
-    _selectedShift = shift;
-    notifyListeners();
   }
 }

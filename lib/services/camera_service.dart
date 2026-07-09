@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/material.dart' show Color;
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 
@@ -44,9 +45,9 @@ class CameraService {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: 0xFF2196F3,
-            statusBarColor: 0xFF1976D2,
-            activeControlsWidgetColor: 0xFF2196F3,
+            toolbarColor: Color(0xFF2196F3),
+            statusBarColor: Color(0xFF1976D2),
+            activeControlsWidgetColor: Color(0xFF2196F3),
           ),
           IOSUiSettings(
             title: 'Crop Image',

@@ -30,7 +30,7 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      final session = _authService.getSession();
+      final session = await _authService.getSession();
       if (session != null && session.user != null) {
         final userData = await _authService.getCurrentUser(session.user!.id);
         if (userData != null) {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 
@@ -28,23 +29,19 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> getProfile(String userId) async {
-    final response = await client
+    final data = await client
         .from('profiles')
         .select('*, positions(*)')
         .eq('id', userId)
-        .single()
-        .execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return response.data as Map<String, dynamic>;
+        .single();
+    return data;
   }
 
   Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
-    final response = await client
+    await client
         .from('profiles')
         .update(data)
-        .eq('id', userId)
-        .execute();
-    if (response.error != null) throw Exception(response.error!.message);
+        .eq('id', userId);
   }
 
   Future<List<Map<String, dynamic>>> getAttendances({
@@ -56,7 +53,7 @@ class SupabaseService {
     int? offset,
   }) async {
     try {
-      var query = client.from('attendances').select('*, shifts(*)');
+      var query = client.from('attendances').select('*, shifts(*)') as dynamic;
 
       if (employeeId != null) {
         query = query.eq('employee_id', employeeId);
@@ -79,9 +76,8 @@ class SupabaseService {
 
       query = query.order('tanggal', ascending: false);
 
-      final response = await query.execute();
-      if (response.error != null) throw Exception(response.error!.message);
-      return (response.data as List).cast<Map<String, dynamic>>();
+      final data = await query;
+      return (data as List).cast<Map<String, dynamic>>();
     } catch (e) {
       throw Exception('Failed to fetch attendances: $e');
     }
@@ -89,25 +85,20 @@ class SupabaseService {
 
   Future<Map<String, dynamic>> insertAttendance(
       Map<String, dynamic> data) async {
-    final response = await client.from('attendances').insert(data).single().execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return response.data as Map<String, dynamic>;
+    final result = await client.from('attendances').insert(data).select().single();
+    return result;
   }
 
   Future<void> updateAttendance(String id, Map<String, dynamic> data) async {
-    final response = await client
+    await client
         .from('attendances')
         .update(data)
-        .eq('id', id)
-        .execute();
-    if (response.error != null) throw Exception(response.error!.message);
+        .eq('id', id);
   }
 
   Future<List<Map<String, dynamic>>> getShifts() async {
-    final response =
-        await client.from('shifts').select('*').order('jam_masuk').execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return (response.data as List).cast<Map<String, dynamic>>();
+    final data = await client.from('shifts').select('*').order('jam_masuk');
+    return (data as List).cast<Map<String, dynamic>>();
   }
 
   Future<List<Map<String, dynamic>>> getPayrolls({
@@ -115,15 +106,13 @@ class SupabaseService {
     required int month,
     required int year,
   }) async {
-    final response = await client
+    final data = await client
         .from('payrolls')
         .select('*')
         .eq('employee_id', employeeId)
         .eq('periode_bulan', month)
-        .eq('periode_tahun', year)
-        .execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return (response.data as List).cast<Map<String, dynamic>>();
+        .eq('periode_tahun', year);
+    return (data as List).cast<Map<String, dynamic>>();
   }
 
   Future<Map<String, dynamic>> calculatePayroll({
@@ -131,13 +120,12 @@ class SupabaseService {
     required int month,
     required int year,
   }) async {
-    final response = await client.rpc('calculate_payroll', params: {
+    final data = await client.rpc('calculate_payroll', params: {
       'p_employee_id': employeeId,
       'p_bulan': month,
       'p_tahun': year,
-    }).execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return response.data as Map<String, dynamic>;
+    });
+    return data as Map<String, dynamic>;
   }
 
   Future<List<Map<String, dynamic>>> getLeaveRequests({
@@ -148,7 +136,7 @@ class SupabaseService {
     int? offset,
   }) async {
     try {
-      var query = client.from('leave_requests').select('*, profiles!inner(*)');
+      var query = client.from('leave_requests').select('*, profiles!inner(*)') as dynamic;
 
       if (employeeId != null) {
         query = query.eq('employee_id', employeeId);
@@ -168,9 +156,8 @@ class SupabaseService {
 
       query = query.order('created_at', ascending: false);
 
-      final response = await query.execute();
-      if (response.error != null) throw Exception(response.error!.message);
-      return (response.data as List).cast<Map<String, dynamic>>();
+      final data = await query;
+      return (data as List).cast<Map<String, dynamic>>();
     } catch (e) {
       throw Exception('Failed to fetch leave requests: $e');
     }
@@ -185,7 +172,7 @@ class SupabaseService {
     int? offset,
   }) async {
     try {
-      var query = client.from('overtimes').select('*, profiles!inner(*)');
+      var query = client.from('overtimes').select('*, profiles!inner(*)') as dynamic;
 
       if (employeeId != null) {
         query = query.eq('employee_id', employeeId);
@@ -208,9 +195,8 @@ class SupabaseService {
 
       query = query.order('created_at', ascending: false);
 
-      final response = await query.execute();
-      if (response.error != null) throw Exception(response.error!.message);
-      return (response.data as List).cast<Map<String, dynamic>>();
+      final data = await query;
+      return (data as List).cast<Map<String, dynamic>>();
     } catch (e) {
       throw Exception('Failed to fetch overtimes: $e');
     }
@@ -219,29 +205,26 @@ class SupabaseService {
   Future<String> uploadFile({
     required String bucket,
     required String path,
-    required String filePath,
+    required File file,
   }) async {
     try {
-      final response = await client.storage.from(bucket).upload(
+      await client.storage.from(bucket).upload(
             path,
-            filePath,
+            file,
             fileOptions: const FileOptions(upsert: true),
           );
-      if (response.error != null) throw Exception(response.error!.message);
-      final urlResponse = client.storage.from(bucket).getPublicUrl(path);
-      return urlResponse;
+      final url = client.storage.from(bucket).getPublicUrl(path);
+      return url;
     } catch (e) {
       throw Exception('Failed to upload file: $e');
     }
   }
 
   Future<List<Map<String, dynamic>>> getGpsLocations() async {
-    final response = await client
+    final data = await client
         .from('gps_locations')
         .select('*')
-        .eq('is_active', true)
-        .execute();
-    if (response.error != null) throw Exception(response.error!.message);
-    return (response.data as List).cast<Map<String, dynamic>>();
+        .eq('is_active', true);
+    return (data as List).cast<Map<String, dynamic>>();
   }
 }

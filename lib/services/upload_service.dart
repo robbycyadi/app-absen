@@ -10,13 +10,9 @@ class UploadService {
     required String bucket,
     required String path,
   }) async {
-    final response = await _client.storage
+    await _client.storage
         .from(bucket)
         .upload(path, file);
-
-    if (response.error != null) {
-      throw Exception('Upload gagal: ${response.error!.message}');
-    }
 
     final url = _client.storage.from(bucket).getPublicUrl(path);
     return url;

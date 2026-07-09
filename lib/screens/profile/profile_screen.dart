@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -275,9 +276,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 50,
                     backgroundImage: _selectedPhotoPath != null
-                        ? FileImage(File(_selectedPhotoPath!))
+                        ? FileImage(File(_selectedPhotoPath!)) as ImageProvider
                         : (user.fotoUrl.isNotEmpty
-                            ? NetworkImage(user.fotoUrl)
+                            ? NetworkImage(user.fotoUrl) as ImageProvider
                             : null),
                     child: (user.fotoUrl.isEmpty && _selectedPhotoPath == null)
                         ? Text(

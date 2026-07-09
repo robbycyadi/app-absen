@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/constants.dart';
+import '../../models/user_model.dart';
 import '../../models/overtime_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/overtime_provider.dart';

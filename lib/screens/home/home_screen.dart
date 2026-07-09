@@ -925,6 +925,8 @@ class _HomeScreenState extends State<HomeScreen> {
         return 'Manager';
       case Role.karyawan:
         return 'Karyawan';
+      default:
+        return '';
     }
   }
 

@@ -44,7 +44,7 @@ class OvertimeProvider extends ChangeNotifier {
   Future<bool> submitOvertime(Map<String, dynamic> data) async {
     _setLoading(true);
     try {
-      await _overtimeService.create(data);
+      await _overtimeService.submitOvertime(data);
       return true;
     } catch (e) {
       debugPrint('Error submitting overtime: $e');
@@ -57,7 +57,7 @@ class OvertimeProvider extends ChangeNotifier {
   Future<bool> approveOvertime(String id) async {
     _setLoading(true);
     try {
-      await _overtimeService.approve(id);
+      await _overtimeService.approveOvertime(id);
       await loadPendingOvertimeApprovals();
       return true;
     } catch (e) {
@@ -71,7 +71,7 @@ class OvertimeProvider extends ChangeNotifier {
   Future<bool> rejectOvertime(String id) async {
     _setLoading(true);
     try {
-      await _overtimeService.reject(id);
+      await _overtimeService.rejectOvertime(id);
       await loadPendingOvertimeApprovals();
       return true;
     } catch (e) {

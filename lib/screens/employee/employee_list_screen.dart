@@ -416,7 +416,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   }
 
   Widget _buildRoleBadge(Role role) {
-    Color color;
+    Color color = Colors.grey;
     switch (role) {
       case Role.admin:
         color = Colors.red;

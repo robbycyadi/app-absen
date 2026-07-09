@@ -21,7 +21,7 @@ class EmployeeProvider extends ChangeNotifier {
   Future<void> loadAllEmployees() async {
     _setLoading(true);
     try {
-      _employees = await _employeeService.getAll();
+      _employees = await _employeeService.getAllEmployees();
     } catch (e) {
       debugPrint('Error loading employees: $e');
     } finally {
@@ -32,7 +32,7 @@ class EmployeeProvider extends ChangeNotifier {
   Future<void> loadEmployeeDetail(String id) async {
     _setLoading(true);
     try {
-      _selectedEmployee = await _employeeService.getById(id);
+      _selectedEmployee = await _employeeService.getEmployeeById(id);
     } catch (e) {
       debugPrint('Error loading employee detail: $e');
     } finally {
@@ -43,7 +43,7 @@ class EmployeeProvider extends ChangeNotifier {
   Future<bool> createEmployee(Map<String, dynamic> data) async {
     _setLoading(true);
     try {
-      await _employeeService.create(data);
+      await _employeeService.createEmployee(data);
       await loadAllEmployees();
       return true;
     } catch (e) {
@@ -57,7 +57,7 @@ class EmployeeProvider extends ChangeNotifier {
   Future<bool> updateEmployee(String id, Map<String, dynamic> data) async {
     _setLoading(true);
     try {
-      await _employeeService.update(id, data);
+      await _employeeService.updateEmployee(id, data);
       if (_selectedEmployee?.id == id) {
         await loadEmployeeDetail(id);
       }
@@ -74,7 +74,8 @@ class EmployeeProvider extends ChangeNotifier {
   Future<bool> toggleActive(String id) async {
     _setLoading(true);
     try {
-      await _employeeService.toggleActive(id);
+      final employee = _employees.where((e) => e.id == id).firstOrNull;
+      await _employeeService.toggleActive(id, !(employee?.isActive ?? true));
       if (_selectedEmployee?.id == id) {
         await loadEmployeeDetail(id);
       }

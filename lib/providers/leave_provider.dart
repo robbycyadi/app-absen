@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:app_absen/models/leave_model.dart';
 import 'package:app_absen/services/leave_service.dart';
-import 'package:app_absen/services/attendance_service.dart';
 
 class LeaveProvider extends ChangeNotifier {
   final LeaveService _leaveService = LeaveService();
-  final AttendanceService _attendanceService = AttendanceService();
 
   List<LeaveRequestModel> _myLeaves = [];
   List<LeaveRequestModel> _pendingApprovals = [];
@@ -46,7 +44,7 @@ class LeaveProvider extends ChangeNotifier {
   Future<bool> submitLeave(Map<String, dynamic> data) async {
     _setLoading(true);
     try {
-      await _leaveService.create(data);
+      await _leaveService.submitLeave(data);
       return true;
     } catch (e) {
       debugPrint('Error submitting leave: $e');
@@ -59,7 +57,7 @@ class LeaveProvider extends ChangeNotifier {
   Future<bool> approveLeave(String id, String? catatan) async {
     _setLoading(true);
     try {
-      await _leaveService.approve(id, catatan);
+      await _leaveService.approveLeave(id, catatan ?? '');
       await loadPendingApprovals();
       return true;
     } catch (e) {
@@ -73,7 +71,7 @@ class LeaveProvider extends ChangeNotifier {
   Future<bool> rejectLeave(String id, String? catatan) async {
     _setLoading(true);
     try {
-      await _leaveService.reject(id, catatan);
+      await _leaveService.rejectLeave(id, catatan ?? '');
       await loadPendingApprovals();
       return true;
     } catch (e) {
@@ -86,11 +84,7 @@ class LeaveProvider extends ChangeNotifier {
 
   Future<int> getSisaCutiTahunan(String employeeId) async {
     try {
-      final int defaultCuti = 12;
-      final tahunIni = DateTime.now().year;
-      final cutiTerpakai =
-          await _attendanceService.getCutiCount(employeeId, tahunIni);
-      return defaultCuti - cutiTerpakai;
+      return await _leaveService.getSisaCutiTahunan(employeeId);
     } catch (e) {
       debugPrint('Error calculating remaining leave: $e');
       return 0;

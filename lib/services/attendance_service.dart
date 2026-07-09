@@ -7,17 +7,17 @@ class AttendanceService {
 
   Future<AttendanceModel?> getTodayAttendance(
       String employeeId, String today) async {
-    final response = await _client
-        .from('attendances')
-        .select('*')
-        .eq('employee_id', employeeId)
-        .eq('tanggal', today)
-        .maybeSingle()
-        .execute();
-
-    if (response.data != null) {
-      return AttendanceModel.fromJson(response.data as Map<String, dynamic>);
-    }
+    try {
+      final data = await _client
+          .from('attendances')
+          .select('*')
+          .eq('employee_id', employeeId)
+          .eq('tanggal', today)
+          .maybeSingle();
+      if (data != null) {
+        return AttendanceModel.fromJson(data as Map<String, dynamic>);
+      }
+    } catch (_) {}
     return null;
   }
 
@@ -28,17 +28,16 @@ class AttendanceService {
     final endDate = DateFormat('yyyy-MM-dd')
         .format(DateTime(year, month + 1, 0));
 
-    final response = await _client
+    final data = await _client
         .from('attendances')
         .select('*')
         .eq('employee_id', employeeId)
         .gte('tanggal', startDate)
         .lte('tanggal', endDate)
-        .order('tanggal', ascending: false)
-        .execute();
+        .order('tanggal', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => AttendanceModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -57,22 +56,22 @@ class AttendanceService {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     final now = DateTime.now().toUtc().toIso8601String();
 
-    final response = await _client.from('attendances').insert({
-      'employee_id': employeeId,
-      'tanggal': today,
-      'shift_id': shiftId,
-      'jam_masuk': now,
-      'foto_masuk_url': fotoMasukUrl,
-      'latitude_masuk': latitudeMasuk,
-      'longitude_masuk': longitudeMasuk,
-      'status': 'hadir',
-      'catatan': catatan,
-    }).select().single().execute();
-
-    if (response.data != null) {
-      return AttendanceModel.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final data = await _client.from('attendances').insert({
+        'employee_id': employeeId,
+        'tanggal': today,
+        'shift_id': shiftId,
+        'jam_masuk': now,
+        'foto_masuk_url': fotoMasukUrl,
+        'latitude_masuk': latitudeMasuk,
+        'longitude_masuk': longitudeMasuk,
+        'status': 'hadir',
+        'catatan': catatan,
+      }).select().single();
+      return AttendanceModel.fromJson(data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   Future<AttendanceModel?> updateAttendance({
@@ -90,17 +89,16 @@ class AttendanceService {
     if (latitudeKeluar != null) data['latitude_keluar'] = latitudeKeluar;
     if (longitudeKeluar != null) data['longitude_keluar'] = longitudeKeluar;
 
-    final response = await _client
-        .from('attendances')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single()
-        .execute();
-
-    if (response.data != null) {
-      return AttendanceModel.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final result = await _client
+          .from('attendances')
+          .update(data)
+          .eq('id', id)
+          .select()
+          .single();
+      return AttendanceModel.fromJson(result as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 }

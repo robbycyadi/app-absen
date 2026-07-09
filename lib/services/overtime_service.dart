@@ -5,15 +5,14 @@ class OvertimeService {
   final _client = SupabaseConfig.getSupabaseClient();
 
   Future<List<OvertimeModel>> getMyOvertimes(String employeeId) async {
-    final response = await _client
+    final data = await _client
         .from('overtimes')
         .select('*')
         .eq('employee_id', employeeId)
-        .order('created_at', ascending: false)
-        .execute();
+        .order('created_at', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => OvertimeModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -22,15 +21,14 @@ class OvertimeService {
   }
 
   Future<List<OvertimeModel>> getPendingApprovals() async {
-    final response = await _client
+    final data = await _client
         .from('overtimes')
         .select('*, profiles(nama_lengkap, nip)')
         .eq('is_approved', false)
-        .order('created_at', ascending: false)
-        .execute();
+        .order('created_at', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => OvertimeModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -39,19 +37,18 @@ class OvertimeService {
   }
 
   Future<void> submitOvertime(Map<String, dynamic> data) async {
-    await _client.from('overtimes').insert(data).execute();
+    await _client.from('overtimes').insert(data);
   }
 
   Future<void> approveOvertime(String id) async {
     await _client
         .from('overtimes')
         .update({'is_approved': true})
-        .eq('id', id)
-        .execute();
+        .eq('id', id);
   }
 
   Future<void> rejectOvertime(String id) async {
-    await _client.from('overtimes').delete().eq('id', id).execute();
+    await _client.from('overtimes').delete().eq('id', id);
   }
 
   double calculateOvertimePay(double totalJam, double gajiPokok) {

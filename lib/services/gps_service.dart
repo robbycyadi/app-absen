@@ -10,12 +10,7 @@ class GpsService {
         throw Exception('Location permission denied');
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 0,
-        ),
-      );
+      final position = await Geolocator.getCurrentPosition();
       return position;
     } catch (e) {
       throw Exception('Failed to get current location: $e');
@@ -77,11 +72,11 @@ class GpsService {
   Future<bool> requestLocationPermission() async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermissions.denied) {
+      if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      return permission == LocationPermissions.whileInUse ||
-          permission == LocationPermissions.always;
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
     } catch (e) {
       return false;
     }

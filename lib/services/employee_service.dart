@@ -6,14 +6,13 @@ class EmployeeService {
   final _client = SupabaseConfig.getSupabaseClient();
 
   Future<List<UserModel>> getAllEmployees() async {
-    final response = await _client
+    final data = await _client
         .from('profiles')
         .select('*, positions(*)')
-        .order('created_at', ascending: false)
-        .execute();
+        .order('created_at', ascending: false);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -22,44 +21,41 @@ class EmployeeService {
   }
 
   Future<UserModel?> getEmployeeById(String id) async {
-    final response = await _client
-        .from('profiles')
-        .select('*, positions(*)')
-        .eq('id', id)
-        .single()
-        .execute();
-
-    if (response.data != null) {
-      return UserModel.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final data = await _client
+          .from('profiles')
+          .select('*, positions(*)')
+          .eq('id', id)
+          .single();
+      return UserModel.fromJson(data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   Future<void> createEmployee(Map<String, dynamic> data) async {
-    await _client.from('profiles').insert(data).execute();
+    await _client.from('profiles').insert(data);
   }
 
   Future<void> updateEmployee(String id, Map<String, dynamic> data) async {
-    await _client.from('profiles').update(data).eq('id', id).execute();
+    await _client.from('profiles').update(data).eq('id', id);
   }
 
   Future<void> toggleActive(String id, bool isActive) async {
     await _client
         .from('profiles')
         .update({'is_active': isActive})
-        .eq('id', id)
-        .execute();
+        .eq('id', id);
   }
 
   Future<List<PositionModel>> getAllPositions() async {
-    final response = await _client
+    final data = await _client
         .from('positions')
         .select('*')
-        .order('nama_jabatan', ascending: true)
-        .execute();
+        .order('nama_jabatan', ascending: true);
 
-    if (response.data != null) {
-      final list = response.data as List;
+    if (data != null) {
+      final list = data as List;
       return list
           .map((e) => PositionModel.fromJson(e as Map<String, dynamic>))
           .toList();

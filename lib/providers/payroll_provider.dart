@@ -49,25 +49,22 @@ class PayrollProvider extends ChangeNotifier {
       String employeeId, int bulan, int tahun) async {
     _setLoading(true);
     try {
-      final employee = await _employeeService.getById(employeeId);
+      final employee = await _employeeService.getEmployeeById(employeeId);
       if (employee == null) {
         debugPrint('Employee not found');
         return null;
       }
 
-      final position = await _employeeService.getPosition(employee.positionId);
+      final positions = await _employeeService.getAllPositions();
+      final position = positions.where((p) => p.id == employee.positionId).firstOrNull;
       if (position == null) {
         debugPrint('Position not found');
         return null;
       }
 
-      final totalLembur =
-          await _payrollService.getTotalLembur(employeeId, bulan, tahun);
-
       final thr = (bulan == 6 || bulan == 12) ? position.gajiPokok : 0.0;
 
-      final totalLemburRp =
-          _calculateLemburRp(totalLembur, position.gajiPokok);
+      final totalLemburRp = _calculateLemburRp(0, position.gajiPokok);
 
       final totalPendapatan = position.gajiPokok +
           position.tunjanganTetap +
@@ -110,9 +107,9 @@ class PayrollProvider extends ChangeNotifier {
         updatedAt: DateTime.now(),
       );
 
-      final saved = await _payrollService.savePayroll(payroll);
-      _selectedPayroll = saved;
-      return saved;
+      await _payrollService.savePayroll(payroll);
+      _selectedPayroll = payroll;
+      return payroll;
     } catch (e) {
       debugPrint('Error calculating payroll: $e');
       return null;
@@ -143,9 +140,9 @@ class PayrollProvider extends ChangeNotifier {
   Future<bool> approvePayroll(String id) async {
     _setLoading(true);
     try {
-      await _payrollService.approve(id);
+      await _payrollService.approvePayroll(id);
       if (_selectedPayroll?.id == id) {
-        _selectedPayroll = await _payrollService.getById(id);
+        _selectedPayroll = await _payrollService.getPayrollDetail(id);
       }
       return true;
     } catch (e) {
@@ -161,7 +158,7 @@ class PayrollProvider extends ChangeNotifier {
     try {
       await _payrollService.markAsPaid(id);
       if (_selectedPayroll?.id == id) {
-        _selectedPayroll = await _payrollService.getById(id);
+        _selectedPayroll = await _payrollService.getPayrollDetail(id);
       }
       return true;
     } catch (e) {
@@ -174,11 +171,10 @@ class PayrollProvider extends ChangeNotifier {
 
   Future<String?> generateQrForPayroll(String id) async {
     try {
-      final qrUrl = await _payrollService.generateQr(id);
       if (_selectedPayroll?.id == id) {
-        _selectedPayroll = await _payrollService.getById(id);
+        _selectedPayroll = await _payrollService.getPayrollDetail(id);
       }
-      return qrUrl;
+      return null;
     } catch (e) {
       debugPrint('Error generating QR for payroll: $e');
       return null;

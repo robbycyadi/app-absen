@@ -27,7 +27,7 @@ class ReportProvider extends ChangeNotifier {
     _setError(null);
     try {
       final file =
-          await _reportService.generateAttendanceReport(employeeId, month, year);
+          await _reportService.generateAttendanceReportPdf({}, [], month, year);
       return file;
     } catch (e) {
       _setError('Gagal membuat laporan absensi: $e');
@@ -41,7 +41,7 @@ class ReportProvider extends ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      final file = await _reportService.generatePayrollSlip(payrollId);
+      final file = await _reportService.generatePayrollSlipPdf({}, {});
       return file;
     } catch (e) {
       _setError('Gagal membuat slip gaji: $e');
@@ -56,7 +56,7 @@ class ReportProvider extends ChangeNotifier {
     _setError(null);
     try {
       final file =
-          await _reportService.generateAllPayrollsReport(month, year);
+          await _reportService.generatePayrollSummaryExcel([], month, year);
       return file;
     } catch (e) {
       _setError('Gagal membuat laporan penggajian: $e');

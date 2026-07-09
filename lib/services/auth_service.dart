@@ -29,17 +29,16 @@ class AuthService {
   }
 
   Future<UserModel?> getCurrentUser(String userId) async {
-    final response = await _client
-        .from('profiles')
-        .select('*, positions(*)')
-        .eq('id', userId)
-        .single()
-        .execute();
-
-    if (response.data != null) {
-      return UserModel.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final data = await _client
+          .from('profiles')
+          .select('*, positions(*)')
+          .eq('id', userId)
+          .single();
+      return UserModel.fromJson(data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   Future<void> createProfile({
@@ -56,15 +55,14 @@ class AuthService {
       'nip': nip,
       'position_id': positionId,
       'role': 'karyawan',
-    }).execute();
+    });
   }
 
   Future<void> updateProfile(String userId, Map<String, dynamic> data) async {
     await _client
         .from('profiles')
         .update(data)
-        .eq('id', userId)
-        .execute();
+        .eq('id', userId);
   }
 
   Future<void> resetPassword(String email) async {

@@ -98,46 +98,29 @@ class ReportService {
       final excel = Excel.createExcel();
       final sheet = excel['Payroll $month-$year'];
 
-      sheet.appendRow([
-        'No',
-        'NIP',
-        'Nama',
-        'Gaji Pokok',
-        'Tunjangan Tetap',
-        'Uang Makan',
-        'Uang Transport',
-        'Total Lembur',
-        'THR',
-        'BPJS Kesehatan',
-        'BPJS JHT',
-        'BPJS JP',
-        'Potongan Lain',
-        'Total Pendapatan',
-        'Total Potongan',
-        'Gaji Bersih',
-        'Status',
-      ]);
+      final headers = ['No', 'NIP', 'Nama', 'Gaji Pokok', 'Tunjangan Tetap', 'Uang Makan', 'Uang Transport', 'Total Lembur', 'THR', 'BPJS Kesehatan', 'BPJS JHT', 'BPJS JP', 'Potongan Lain', 'Total Pendapatan', 'Total Potongan', 'Gaji Bersih', 'Status'];
+      sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
 
       for (var i = 0; i < allPayrolls.length; i++) {
         final p = allPayrolls[i];
         sheet.appendRow([
-          i + 1,
-          p['nip'] ?? '',
-          p['nama_lengkap'] ?? '',
-          _formatNumber(p['gaji_pokok']),
-          _formatNumber(p['tunjangan_tetap']),
-          _formatNumber(p['uang_makan']),
-          _formatNumber(p['uang_transport']),
-          _formatNumber(p['total_lembur']),
-          _formatNumber(p['thr']),
-          _formatNumber(p['bpjs_kesehatan_karyawan']),
-          _formatNumber(p['bpjs_jht_karyawan']),
-          _formatNumber(p['bpjs_jp_karyawan']),
-          _formatNumber(p['potongan_lain']),
-          _formatNumber(p['total_pendapatan']),
-          _formatNumber(p['total_potongan']),
-          _formatNumber(p['gaji_bersih']),
-          p['status'] ?? '',
+          TextCellValue('${i + 1}'),
+          TextCellValue('${p['nip'] ?? ''}'),
+          TextCellValue('${p['nama_lengkap'] ?? ''}'),
+          TextCellValue(_formatNumber(p['gaji_pokok'])),
+          TextCellValue(_formatNumber(p['tunjangan_tetap'])),
+          TextCellValue(_formatNumber(p['uang_makan'])),
+          TextCellValue(_formatNumber(p['uang_transport'])),
+          TextCellValue(_formatNumber(p['total_lembur'])),
+          TextCellValue(_formatNumber(p['thr'])),
+          TextCellValue(_formatNumber(p['bpjs_kesehatan_karyawan'])),
+          TextCellValue(_formatNumber(p['bpjs_jht_karyawan'])),
+          TextCellValue(_formatNumber(p['bpjs_jp_karyawan'])),
+          TextCellValue(_formatNumber(p['potongan_lain'])),
+          TextCellValue(_formatNumber(p['total_pendapatan'])),
+          TextCellValue(_formatNumber(p['total_potongan'])),
+          TextCellValue(_formatNumber(p['gaji_bersih'])),
+          TextCellValue('${p['status'] ?? ''}'),
         ]);
       }
 
@@ -274,7 +257,7 @@ class ReportService {
             width: 80,
             child: pw.Text(
               label,
-              style: const pw.TextStyle(
+              style: pw.TextStyle(
                 fontSize: 10,
                 fontWeight: pw.FontWeight.bold,
               ),
@@ -292,7 +275,7 @@ class ReportService {
       padding: const pw.EdgeInsets.symmetric(vertical: 4),
       child: pw.Text(
         'Periode: $monthName $year',
-        style: const pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
       ),
     );
   }
@@ -385,7 +368,7 @@ class ReportService {
         );
     return pw.Text(
       'Periode: $monthName ${payroll['periode_tahun']}',
-      style: const pw.TextStyle(
+      style: pw.TextStyle(
         fontSize: 12,
         fontWeight: pw.FontWeight.bold,
         color: PdfColors.blue800,
