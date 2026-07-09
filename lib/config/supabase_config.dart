@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseConfig {
-  static const String _supabaseUrl = 'https://your-project.supabase.co';
-  static const String _supabaseAnonKey = 'your-anon-key';
+  static const String _supabaseUrl = 'https://qrycwbknlcmqikzlwwmx.supabase.co';
+  static const String _supabaseAnonKey = 'sb_publishable_Yk2QK8S727RToTvBW-JggQ_UEui6_5G';
 
   SupabaseConfig._();
 
