@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +21,8 @@ class _ReportScreenState extends State<ReportScreen> {
   int _selectedYear = DateTime.now().year;
   String? _selectedEmployeeId;
   String? _selectedType;
-  File? _generatedFile;
+  Uint8List? _generatedBytes;
+  String? _generatedFileName;
 
   final List<Map<String, dynamic>> _reportTypes = [
     {
@@ -112,7 +113,8 @@ class _ReportScreenState extends State<ReportScreen> {
         onTap: () {
           setState(() {
             _selectedType = key;
-            _generatedFile = null;
+            _generatedBytes = null;
+            _generatedFileName = null;
             if (!type['needsEmployee'] as bool) {
               _selectedEmployeeId = null;
             }
@@ -282,7 +284,7 @@ class _ReportScreenState extends State<ReportScreen> {
                         ),
                       ),
                     ),
-                    if (_generatedFile != null) ...[
+            if (_generatedBytes != null) ...[
                       const SizedBox(width: 12),
                       SizedBox(
                         height: 48,
@@ -326,7 +328,7 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'File: ${_generatedFile!.path.split('/').last}',
+              'File: ${_generatedFileName ?? "report"}',
               style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
@@ -382,8 +384,11 @@ class _ReportScreenState extends State<ReportScreen> {
               trailing: IconButton(
                 icon: const Icon(Icons.share, size: 18),
                 onPressed: () {
-                  if (item['file'] != null) {
-                    context.read<ReportProvider>().shareReport(item['file'] as File);
+                  if (item['bytes'] != null) {
+                    context.read<ReportProvider>().shareReport(
+                      item['bytes'] as Uint8List,
+                      item['fileName'] as String,
+                    );
                   }
                 },
               ),
@@ -524,7 +529,8 @@ class _ReportScreenState extends State<ReportScreen> {
 
     final report = context.read<ReportProvider>();
 
-    File? file;
+    Uint8List? bytes;
+    String? fileName;
 
     switch (_selectedType) {
       case 'attendance':
@@ -537,17 +543,19 @@ class _ReportScreenState extends State<ReportScreen> {
           );
           return;
         }
-        file = await report.generateAttendanceReport(
+        bytes = await report.generateAttendanceReport(
           _selectedEmployeeIdForFilter!,
           _selectedMonth,
           _selectedYear,
         );
+        fileName = 'laporan_absensi_$_selectedMonth-$_selectedYear.pdf';
         break;
       case 'payroll_summary':
-        file = await report.generateAllPayrollsReport(
+        bytes = await report.generateAllPayrollsReport(
           _selectedMonth,
           _selectedYear,
         );
+        fileName = 'rekap_gaji_$_selectedMonth-$_selectedYear.xlsx';
         break;
       case 'payroll_slip':
         if (_selectedEmployeeIdForFilter == null) {
@@ -567,8 +575,11 @@ class _ReportScreenState extends State<ReportScreen> {
 
     if (!mounted) return;
 
-    if (file != null) {
-      setState(() => _generatedFile = file);
+    if (bytes != null) {
+      setState(() {
+        _generatedBytes = bytes;
+        _generatedFileName = fileName;
+      });
 
       final typeName = _reportTypes
           .firstWhere((t) => t['key'] == _selectedType)['title'] as String;
@@ -577,7 +588,8 @@ class _ReportScreenState extends State<ReportScreen> {
         'type': _selectedType,
         'name': typeName,
         'date': DateFormat('dd MMMM yyyy HH:mm', 'id_ID').format(DateTime.now()),
-        'file': file,
+        'bytes': bytes,
+        'fileName': fileName,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -597,9 +609,9 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Future<void> _shareReport(BuildContext context) async {
-    if (_generatedFile == null) return;
+    if (_generatedBytes == null || _generatedFileName == null) return;
 
     final report = context.read<ReportProvider>();
-    await report.shareReport(_generatedFile!);
+    await report.shareReport(_generatedBytes!, _generatedFileName!);
   }
 }

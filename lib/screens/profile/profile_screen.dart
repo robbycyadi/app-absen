@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../config/constants.dart';
+import '../../config/platform_helper.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/report_service.dart';
@@ -35,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _obscureConfirm = true;
 
   String? _selectedPhotoPath;
+  Uint8List? _selectedPhotoBytes;
 
   @override
   void dispose() {
@@ -62,11 +64,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       imageQuality: 85,
     );
     if (picked != null) {
-      setState(() => _selectedPhotoPath = picked.path);
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _selectedPhotoPath = picked.path;
+        _selectedPhotoBytes = bytes;
+      });
     }
   }
 
   void _showPhotoPicker() {
+    if (PlatformHelper.isWeb) {
+      _pickPhoto(ImageSource.gallery);
+      return;
+    }
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -275,8 +285,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: _selectedPhotoPath != null
-                        ? FileImage(File(_selectedPhotoPath!)) as ImageProvider
+                    backgroundImage: _selectedPhotoBytes != null
+                        ? MemoryImage(_selectedPhotoBytes!) as ImageProvider
                         : (user.fotoUrl.isNotEmpty
                             ? NetworkImage(user.fotoUrl) as ImageProvider
                             : null),

@@ -1,0 +1,24 @@
+Done. Workflow di .github/workflows/deploy-web.yml.
+Yang perlu kamu set di GitHub repo Settings > Secrets:
+1. Buka https://console.firebase.google.com/project/app-absensi-296ee/settings/serviceaccounts/adminsdk
+2. Klik "Generate new private key" → download JSON
+3. Buka https://github.com/dumai/App-Absen/settings/keys (sesuaikan repo path)
+4. Tambah secret baru:
+- Name: FIREBASE_SERVICE_ACCOUNT_APP_ABSENSI_296EE
+- Value: isi seluruh isi JSON dari langkah 2
+Setelah itu, tiap push ke main otomatis build web + deploy ke https://app-absensi-296ee.web.app.
+
+Oke, saya bantu langkah demi langkah:
+Langkah 1: Ambil Firebase Service Account Key
+Buka link ini di browser:
+https://console.firebase.google.com/project/app-absensi-296ee/settings/serviceaccounts/adminsdk
+Klik tombol "Generate new private key" (warna biru) → klik "Generate key" → akan terdownload file .json
+Langkah 2: Masukin ke GitHub Secret
+Buka link ini di browser:
+https://github.com/USERNAME/App-Absen/settings/secrets/actions
+(ganti USERNAME dengan username GitHub kamu)
+1. Klik tombol "New repository secret" (tombol hijau)
+2. Di Name tulis: FIREBASE_SERVICE_ACCOUNT_APP_ABSENSI_296EE
+3. Di Secret paste isi file .json yang tadi (buka file .json pakai text editor, copy semua, paste)
+4. Klik "Add secret"
+Selesai! Setelah itu tiap push code ke branch main, GitHub otomatis build web dan deploy ke Firebase.

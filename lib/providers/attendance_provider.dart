@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
@@ -67,7 +67,7 @@ class AttendanceProvider extends ChangeNotifier {
   Future<AttendanceModel?> checkIn({
     required String employeeId,
     required String shiftId,
-    required File photoFile,
+    required Uint8List photoBytes,
     required double latitude,
     required double longitude,
     required String locationName,
@@ -76,9 +76,9 @@ class AttendanceProvider extends ChangeNotifier {
     _setError(null);
     try {
       final photoUrl = await _uploadService.uploadFile(
-        file: photoFile,
         bucket: 'attendance',
         path: 'checkin/$employeeId/${DateTime.now().millisecondsSinceEpoch}',
+        bytes: photoBytes,
       );
 
       final attendance = await _attendanceService.createAttendance(
@@ -103,7 +103,7 @@ class AttendanceProvider extends ChangeNotifier {
 
   Future<AttendanceModel?> checkOut({
     required String employeeId,
-    required File photoFile,
+    required Uint8List photoBytes,
     required double latitude,
     required double longitude,
   }) async {
@@ -116,9 +116,9 @@ class AttendanceProvider extends ChangeNotifier {
       }
 
       final photoUrl = await _uploadService.uploadFile(
-        file: photoFile,
         bucket: 'attendance',
         path: 'checkout/$employeeId/${DateTime.now().millisecondsSinceEpoch}',
+        bytes: photoBytes,
       );
 
       final updated = await _attendanceService.updateAttendance(

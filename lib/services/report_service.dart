@@ -1,16 +1,15 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:app_absen/config/platform_helper.dart';
 
 class ReportService {
   static const _fontFamily = 'Helvetica';
 
-  Future<File> generateAttendanceReportPdf(
+  Future<Uint8List> generateAttendanceReportPdf(
     Map<String, dynamic> employee,
     List<Map<String, dynamic>> attendances,
     int month,
@@ -40,18 +39,13 @@ class ReportService {
         ),
       );
 
-      final dir = await getTemporaryDirectory();
-      final file = File(
-        '${dir.path}/laporan_absen_${employee['nip']}_$month-$year.pdf',
-      );
-      await file.writeAsBytes(await pdf.save());
-      return file;
+      return await pdf.save();
     } catch (e) {
       throw Exception('Failed to generate attendance PDF: $e');
     }
   }
 
-  Future<File> generatePayrollSlipPdf(
+  Future<Uint8List> generatePayrollSlipPdf(
     Map<String, dynamic> payroll,
     Map<String, dynamic> employee,
   ) async {
@@ -78,18 +72,13 @@ class ReportService {
         ),
       );
 
-      final dir = await getTemporaryDirectory();
-      final file = File(
-        '${dir.path}/slip_gaji_${employee['nip']}_${payroll['periode_bulan']}-${payroll['periode_tahun']}.pdf',
-      );
-      await file.writeAsBytes(await pdf.save());
-      return file;
+      return await pdf.save();
     } catch (e) {
       throw Exception('Failed to generate payroll PDF: $e');
     }
   }
 
-  Future<File> generatePayrollSummaryExcel(
+  Future<Uint8List> generatePayrollSummaryExcel(
     List<Map<String, dynamic>> allPayrolls,
     int month,
     int year,
@@ -124,23 +113,17 @@ class ReportService {
         ]);
       }
 
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/rekap_gaji_$month-$year.xlsx');
-      await file.writeAsBytes(excel.encode()!);
-      return file;
+      return Uint8List.fromList(excel.encode()!);
     } catch (e) {
       throw Exception('Failed to generate payroll Excel: $e');
     }
   }
 
-  Future<void> shareFile(File file) async {
-    try {
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'App-Absen Report',
-      );
-    } catch (e) {
-      throw Exception('Failed to share file: $e');
+  Future<void> downloadOrShareReport(Uint8List bytes, String fileName) async {
+    if (PlatformHelper.isWeb) {
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+    } else {
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
     }
   }
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:app_absen/config/platform_helper.dart';
 
 class QrCodeService {
   String generateAttendanceQrData(Map<String, dynamic> attendance) {
@@ -52,6 +52,43 @@ class QrCodeService {
   }
 
   Future<String?> scanQrCode(BuildContext context) async {
+    if (PlatformHelper.isWeb) {
+      return _showWebScanDialog(context);
+    }
+    return _scanQrMobile(context);
+  }
+
+  Future<String?> _showWebScanDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Scan QR Code'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Masukkan kode QR',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result;
+  }
+
+  Future<String?> _scanQrMobile(BuildContext context) async {
     try {
       final result = await Navigator.of(context).push<String>(
         MaterialPageRoute(
@@ -74,15 +111,6 @@ class _QrScannerPage extends StatefulWidget {
 }
 
 class _QrScannerPageState extends State<_QrScannerPage> {
-  final MobileScannerController _controller = MobileScannerController();
-  bool _hasScanned = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,16 +120,11 @@ class _QrScannerPageState extends State<_QrScannerPage> {
         foregroundColor: Colors.white,
       ),
       backgroundColor: Colors.black,
-      body: MobileScanner(
-        controller: _controller,
-        onDetect: (capture) {
-          if (_hasScanned) return;
-          final barcode = capture.barcodes.firstOrNull;
-          if (barcode != null && barcode.rawValue != null) {
-            _hasScanned = true;
-            Navigator.of(context).pop(barcode.rawValue);
-          }
-        },
+      body: const Center(
+        child: Text(
+          'QR Scanner tidak tersedia di web',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
       ),
     );
   }

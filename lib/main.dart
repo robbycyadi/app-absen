@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'config/platform_helper.dart';
 import 'config/supabase_config.dart';
 import 'providers/attendance_provider.dart';
 import 'providers/auth_provider.dart';
@@ -21,12 +21,6 @@ void main() async {
     await SupabaseConfig.initialize();
   } catch (e) {
     debugPrint('Supabase initialization error: $e');
-  }
-
-  try {
-    await FlutterNativeTimezone.getLocalTimezone();
-  } catch (e) {
-    debugPrint('Timezone initialization error: $e');
   }
 
   runApp(

@@ -19,6 +19,9 @@ ios/.symlinks/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 
+# Firebase
+.firebase/
+
 # Misc
 .DS_Store
 .env

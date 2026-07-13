@@ -1,6 +1,6 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/run/media/dumai/HD/Document/WEBSITE/App-Absen/flutter_sdk"
+export "FLUTTER_ROOT=/home/dumai/flutter"
 export "FLUTTER_APPLICATION_PATH=/run/media/dumai/HD/Document/WEBSITE/App-Absen"
 export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/run/media/dumai/HD/Document/WEBSITE/App-Absen/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"

@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +13,7 @@ import 'package:app_absen/providers/shift_provider.dart';
 import 'package:app_absen/providers/auth_provider.dart';
 import 'package:app_absen/services/gps_service.dart';
 import 'package:app_absen/config/constants.dart';
+import 'package:app_absen/config/platform_helper.dart';
 import 'package:app_absen/screens/attendance/selfie_screen.dart';
 
 enum AttendanceStep { lokasi, foto, selesai }
@@ -36,7 +37,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
   Position? _currentPosition;
   String _address = '';
   double _distanceFromOffice = 0;
-  File? _selfieFile;
+  Uint8List? _selfieBytes;
   XFile? _selfieXFile;
   String? _errorMessage;
   StreamSubscription<Position>? _positionStream;
@@ -233,17 +234,20 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
 
     if (result != null && mounted) {
+      final bytes = await result.readAsBytes();
       setState(() {
         _selfieXFile = result;
-        _selfieFile = File(result.path);
+        _selfieBytes = bytes;
         _currentStep = AttendanceStep.selesai;
       });
     }
   }
 
   Future<void> _retakeSelfie() async {
-    final file = await _imagePicker.pickImage(
-      source: ImageSource.camera,
+    final picker = ImagePicker();
+    final source = PlatformHelper.isWeb ? ImageSource.gallery : ImageSource.camera;
+    final file = await picker.pickImage(
+      source: source,
       preferredCameraDevice: CameraDevice.front,
       maxWidth: AppConstants.selfieMaxWidth.toDouble(),
       maxHeight: AppConstants.selfieMaxHeight.toDouble(),
@@ -251,15 +255,16 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     );
 
     if (file != null && mounted) {
+      final bytes = await file.readAsBytes();
       setState(() {
         _selfieXFile = file;
-        _selfieFile = File(file.path);
+        _selfieBytes = bytes;
       });
     }
   }
 
   Future<void> _submitAttendance() async {
-    if (_currentPosition == null || _selfieFile == null) return;
+    if (_currentPosition == null || _selfieBytes == null) return;
 
     final auth = context.read<AuthProvider>();
     final attendanceProv = context.read<AttendanceProvider>();
@@ -282,7 +287,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         final result = await attendanceProv.checkIn(
           employeeId: employeeId,
           shiftId: shift?.id ?? '',
-          photoFile: _selfieFile!,
+          photoBytes: _selfieBytes!,
           latitude: _currentPosition!.latitude,
           longitude: _currentPosition!.longitude,
           locationName: _address,
@@ -297,7 +302,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
       } else {
         final result = await attendanceProv.checkOut(
           employeeId: employeeId,
-          photoFile: _selfieFile!,
+          photoBytes: _selfieBytes!,
           latitude: _currentPosition!.latitude,
           longitude: _currentPosition!.longitude,
         );
@@ -417,7 +422,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
             _buildShiftCard(),
             const SizedBox(height: 8),
             _buildProgressSteps(),
-            if (_selfieFile != null) _buildSelfiePreview(),
+            if (_selfieBytes != null) _buildSelfiePreview(),
             if (_errorMessage != null) _buildErrorBanner(),
             const SizedBox(height: 16),
           ],
@@ -760,7 +765,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
               label: 'Selesai',
               isActive: _currentStep == AttendanceStep.selesai,
               isCompleted: _currentStep.index >= AttendanceStep.selesai.index &&
-                  _selfieFile != null,
+                  _selfieBytes != null,
               icon: Icons.check_circle,
             ),
           ],
@@ -859,12 +864,14 @@ class _AttendanceScreenState extends State<AttendanceScreen>
             const SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                _selfieFile!,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: _selfieBytes != null
+                  ? Image.memory(
+                      _selfieBytes!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),
@@ -922,11 +929,11 @@ class _AttendanceScreenState extends State<AttendanceScreen>
     } else if (isCheckedIn) {
       buttonText = 'ABSEN KELUAR';
       buttonIcon = Icons.logout;
-      canSubmit = _isWithinRadius && _selfieFile != null;
+      canSubmit = _isWithinRadius && _selfieBytes != null;
     } else {
       buttonText = 'ABSEN MASUK';
       buttonIcon = Icons.login;
-      canSubmit = _isWithinRadius && _selfieFile != null;
+      canSubmit = _isWithinRadius && _selfieBytes != null;
     }
 
     return SafeArea(
@@ -935,7 +942,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_selfieFile == null && _currentStep != AttendanceStep.lokasi)
+            if (_selfieBytes == null && _currentStep != AttendanceStep.lokasi)
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -947,7 +954,7 @@ class _AttendanceScreenState extends State<AttendanceScreen>
                   ),
                 ),
               ),
-            if (_selfieFile == null) const SizedBox(height: 8),
+            if (_selfieBytes == null) const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               height: 56,

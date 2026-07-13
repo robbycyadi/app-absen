@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 
@@ -203,17 +203,21 @@ class SupabaseService {
   }
 
   Future<String> uploadFile({
-    required String bucket,
-    required String path,
-    required File file,
+    String? bucket,
+    String? path,
+    required Uint8List bytes,
   }) async {
     try {
-      await client.storage.from(bucket).upload(
-            path,
-            file,
+      final storageBucket = bucket ?? 'attendance';
+      final storagePath = path ?? 'uploads/${DateTime.now().millisecondsSinceEpoch}';
+
+      await client.storage.from(storageBucket).uploadBinary(
+            storagePath,
+            bytes,
             fileOptions: const FileOptions(upsert: true),
           );
-      final url = client.storage.from(bucket).getPublicUrl(path);
+
+      final url = client.storage.from(storageBucket).getPublicUrl(storagePath);
       return url;
     } catch (e) {
       throw Exception('Failed to upload file: $e');

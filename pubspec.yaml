@@ -29,32 +29,21 @@ dependencies:
 
   # Camera & Image
   image_picker: ^1.1.2
-  camera: ^0.11.0+1
-  permission_handler: ^11.3.1
 
   # QR Code
   qr_flutter: ^4.1.0
-  qr_code_scanner: ^1.0.1
-  mobile_scanner: ^5.2.3
 
   # PDF & Excel
   pdf: ^3.11.1
   printing: ^5.13.1
   excel: ^4.0.4
-  share_plus: ^10.0.3
-  path_provider: ^2.1.4
 
   # State Management
   provider: ^6.1.2
 
-  # Notification
-  flutter_local_notifications: ^18.0.1
-
   # Utilities
   connectivity_plus: ^6.1.0
   flutter_slidable: ^3.1.1
-  image_cropper: ^8.0.2
-  flutter_native_timezone: ^2.0.0
   url_launcher: ^6.3.0
 
 dev_dependencies:
